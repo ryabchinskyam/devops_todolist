@@ -1,3 +1,4 @@
+HEAD
 name: Build and Push Docker Image
 
 on:
@@ -30,3 +31,13 @@ jobs:
           file: Dockerfile
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/todoapp:1.0.0
+
+## Build and Run Locally
+
+### Передумови
+- Docker встановлено (https://docs.docker.com/get-docker/)
+
+### 1. Збірка образу
+```bash
+docker build -t todoapp:1.0.0 .
+update-docker-ci
