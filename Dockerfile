@@ -1,14 +1,21 @@
-# 🛠️ Stage 1: Builder
-FROM python:3.10-slim AS builder
-COPY requirements.txt .
+# 1. Стадія збірки: встановлюємо залежності
+FROM python:3.11-slim AS builder
 WORKDIR /app
-COPY .
-RUN pip install --user -r requirements.txt
 
-# 🧼 Stage 2: Final image
-FROM python:3.10-slim
-WORKDIR /app
-COPY --from=builder /root/.local /root/.local
-ENV PATH=/root/.local/bin:$PATH
+RUN pip install --upgrade pip
+COPY requirements.txt .
+RUN pip install --prefix=/install -r requirements.txt
+
 COPY . .
-CMD ["bash", "-c", "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"]
+
+# 2. Фінальна стадія: формуємо ратайм-образ
+FROM python:3.11-slim
+WORKDIR /app
+
+COPY --from=builder /install /usr/local
+COPY --from=builder /app /app
+
+ENV PYTHONUNBUFFERED=1
+EXPOSE 8000
+
+CMD ["gunicorn", "todoapp.wsgi:application", "--bind", "0.0.0.0:8000"]
